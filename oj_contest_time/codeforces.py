@@ -83,21 +83,21 @@ class get_codeforces:
                 'title': title,
                 'time': time_display,
                 'duration': duration_str,
-                'start_time_utc': start_time_utc,
-                'platform':"codeforces"
+                'start_time': start_time_utc,
+                'platform':"Codeforces"
             })
         
         # 按开始时间排序（最近的在前）
-        filtered_contests.sort(key=lambda x: x['start_time_utc'])
+        filtered_contests.sort(key=lambda x: x['start_time'])
         
         # 打印结果
-        print(f"发现 {len(filtered_contests)} 个未结束的比赛:")
-        for i, contest in enumerate(filtered_contests, 1):
-            print("-" * 60)
-            print(f"比赛平台：{contest['platform']}")
-            print(f"比赛标题: {contest['title']}")
-            print(f"比赛时间: {contest['time']}")
-            print(f"比赛时长: {contest['duration']}")
+        # print(f"发现 {len(filtered_contests)} 个未结束的比赛:")
+        # for i, contest in enumerate(filtered_contests, 1):
+        #     print("-" * 60)
+        #     print(f"比赛平台：{contest['platform']}")
+        #     print(f"比赛标题: {contest['title']}")
+        #     print(f"比赛时间: {contest['time']}")
+        #     print(f"比赛时长: {contest['duration']}")
 
         return filtered_contests
 

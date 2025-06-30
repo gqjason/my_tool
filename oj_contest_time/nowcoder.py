@@ -61,6 +61,8 @@ class get_nowcoder:
                         end_str = end_str.strip()
                         duration = duration[5:-1]
                         start_time = datetime.datetime.strptime(start_str, '%Y-%m-%d %H:%M')
+                        # 将中国时间（UTC+8）转为UTC时间
+                        start_time_utc = start_time - datetime.timedelta(hours=8)
                         end_time = datetime.datetime.strptime(end_str, '%Y-%m-%d %H:%M')
                         
                         # 计算比赛时长
@@ -80,7 +82,7 @@ class get_nowcoder:
                             'title': title,
                             'time': time_display,
                             'duration': duration_str,
-                            'start_time': start_time,
+                            'start_time': start_time_utc,
                             'platform': "牛客"
                         })
 
@@ -95,13 +97,13 @@ class get_nowcoder:
         contests.sort(key=lambda x: x['start_time'])
 
         # 打印结果
-        print(f"发现 {len(contests)} 个未结束的比赛:")
-        for i, contest in enumerate(contests, 1):
-            print("-" * 60)
-            print(f"比赛平台：{contest['platform']}")
-            print(f"比赛标题: {contest['title']}")
-            print(f"比赛时间: {contest['time']}")
-            print(f"比赛时长: {contest['duration']}")
+        # print(f"发现 {len(contests)} 个未结束的比赛:")
+        # for i, contest in enumerate(contests, 1):
+        #     print("-" * 60)
+        #     print(f"比赛平台：{contest['platform']}")
+        #     print(f"比赛标题: {contest['title']}")
+        #     print(f"比赛时间: {contest['time']}")
+        #     print(f"比赛时长: {contest['duration']}")
             
         return contests
 

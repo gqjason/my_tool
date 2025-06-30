@@ -127,13 +127,13 @@ class get_atcoder:
         contests.sort(key=lambda x: x['start_time'])
         
         # 打印结果
-        print(f"发现 {len(contests)} 个 AtCoder 比赛:")
-        for i, contest in enumerate(contests, 1):
-            print("-" * 60)
-            print(f"比赛平台: {contest['platform']}")
-            print(f"比赛标题: {contest['title']}")
-            print(f"比赛时间: {contest['time']}")
-            print(f"比赛时长: {contest['duration']}")
+        # print(f"发现 {len(contests)} 个 AtCoder 比赛:")
+        # for i, contest in enumerate(contests, 1):
+        #     print("-" * 60)
+        #     print(f"比赛平台: {contest['platform']}")
+        #     print(f"比赛标题: {contest['title']}")
+        #     print(f"比赛时间: {contest['time']}")
+        #     print(f"比赛时长: {contest['duration']}")
 
             
         return contests

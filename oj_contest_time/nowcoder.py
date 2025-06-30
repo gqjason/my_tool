@@ -40,16 +40,21 @@ for section in soup.find_all('div', class_='platform-mod'):
         
         # 获取纯文本标题（去除任何子标签）
         title = title_tag.get_text(strip=True)
-        
+        time_text = ""
         # 提取时间
         time_tag = item.find('li', class_='match-time-icon')
         if time_tag:
             time_text = time_tag.get_text(strip=True).replace('比赛时间：', '')
+            #print(time_text)
             # 尝试解析时间范围
             try:
                 start_str, end_str = time_text.split(' 至 ')
-                start_time = datetime.datetime.strptime(start_str, '%Y-%m-%d %H:%M:%S')
-                end_time = datetime.datetime.strptime(end_str, '%Y-%m-%d %H:%M:%S')
+                start_str = start_str.strip()
+                end_str, duration = end_str.split('\n')
+                end_str = end_str.strip()
+                duration = duration[5:-1]
+                start_time = datetime.datetime.strptime(start_str, '%Y-%m-%d %H:%M')
+                end_time = datetime.datetime.strptime(end_str, '%Y-%m-%d %H:%M')
                 
                 # 根据时间状态添加标签
                 if now < start_time:
@@ -59,22 +64,26 @@ for section in soup.find_all('div', class_='platform-mod'):
                 else:
                     status = "已结束"  # 理论上不会出现，因为已跳过整个模块
                     
-                # 添加状态标签到标题
-                title = f"[{status}] {title}"
+                   
+                title = f"{title}" 
+                time_text = f"{start_time} 至 {end_time}"
+                
+
             except:
-                # 时间格式解析失败时保持原样
                 pass
         else:
             time_text = "时间未找到"
+            
         
-        contests.append([title, time_text])
+        contests.append([title, time_text, duration])
 
 # 按开始时间排序（最近的在前）
 contests.sort(key=lambda x: x[1])
 
 # 打印结果
 print(f"发现 {len(contests)} 个未结束的比赛:")
-for title, time in contests:
-    print("-" * 30)
+for title, time, duration in contests:
+    print("-" * 60)
     print(f"比赛标题: {title}")
     print(f"比赛时间: {time}")
+    print(f"比赛时长: {duration}")

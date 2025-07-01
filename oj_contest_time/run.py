@@ -16,7 +16,6 @@ def get_config_path():
         return os.path.join(os.getenv('APPDATA'), "OJContestApp", "settings.json")
     else:
         return os.path.join(os.path.expanduser("~"), ".config", "OJContestApp", "settings.json")
-
 # 创建配置目录
 def create_config_dir():
     config_path = get_config_path()
@@ -24,7 +23,6 @@ def create_config_dir():
     if not os.path.exists(config_dir):
         os.makedirs(config_dir)
     return config_path
-
 # 开机自启动设置
 def set_autostart(enable):
     config_path = get_config_path()
@@ -108,7 +106,6 @@ X-GNOME-Autostart-enabled=true
             return True
     
     return False
-
 # 检查开机自启动状态
 def check_autostart():
     if platform.system() == "Windows":
@@ -191,16 +188,7 @@ class OJContestApp:
                 return default_settings
         return default_settings
     
-    def save_settings(self):
-        """保存设置到文件"""
-        config_path = create_config_dir()
-        try:
-            with open(config_path, "w", encoding="utf-8") as f:
-                json.dump(self.settings, f, ensure_ascii=False, indent=2)
-            return True
-        except Exception as e:
-            print(f"保存设置失败: {e}")
-            return False
+
     
     def apply_theme(self, theme):
         """应用主题设置"""

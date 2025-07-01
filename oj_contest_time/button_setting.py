@@ -21,6 +21,17 @@ class Setting:
     )
     settings_button.pack(side=tk.RIGHT, padx=10)
     
+    def save_settings(self):
+        """保存设置到文件"""
+        config_path = about_system.create_config_dir()
+        try:
+            with open(config_path, "w", encoding="utf-8") as f:
+                json.dump(self.settings, f, ensure_ascii=False, indent=2)
+            return True
+        except Exception as e:
+            print(f"保存设置失败: {e}")
+            return False
+    
     def open_settings(self):
         """打开设置窗口"""
         # 创建设置窗口

@@ -8,7 +8,7 @@ import json
 import os
 import sys
 import platform
-from oj_contest_time.get_information.capture import Main
+from get_information.capture import Main
 
 # 获取配置文件路径
 def get_config_path():

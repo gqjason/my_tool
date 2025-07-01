@@ -1,6 +1,6 @@
-from oj_contest_time.get_information.nowcoder import get_nowcoder
-from oj_contest_time.get_information.atcoder import get_atcoder
-from oj_contest_time.get_information.codeforces import get_codeforces
+from get_information.nowcoder import get_nowcoder
+from get_information.atcoder import get_atcoder
+from get_information.codeforces import get_codeforces
 from datetime import datetime, timedelta, timezone
 
 class Main:
@@ -79,15 +79,17 @@ class Main:
         #     print(f"比赛标题: {contest['title']}")
         #     print(f"比赛时间: {contest['time']}")
         #     print(f"比赛时长: {contest['duration']}")
-        return today_contest,upcoming_contest
+
     
     def return_today_upcoming_contest():
-        upcoming_contest = Main.get_upcoming_contests()
-        return upcoming_contest
-    def return_all_upcoming_contest():
+        
         upcoming_contest = Main.get_upcoming_contests()
         today_contest = Main.filter_today_competition(upcoming_contest)
         return today_contest
+    
+    def return_all_upcoming_contest():
+        upcoming_contest = Main.get_upcoming_contests()
+        return upcoming_contest
 
     
 if __name__ == '__main__':

@@ -2,7 +2,7 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import datetime
 import re
-
+import pytz
 class get_nowcoder:
 
     def get_nc():
@@ -52,17 +52,20 @@ class get_nowcoder:
                     time_text = time_tag.get_text(strip=True).replace('比赛时间：', '')
                     # 尝试解析时间范围
                     try:
+                        
                         # 提取开始和结束时间
                         start_str, end_str = time_text.split(' 至 ')
                         start_str = start_str.strip()
                         end_str, duration = end_str.split('\n')
                         end_str = end_str.strip()
                         duration = duration[5:-1]
-                        
+                        china_tz = pytz.timezone('Asia/Shanghai')
                         start_time = datetime.datetime.strptime(start_str, '%Y-%m-%d %H:%M')
                         end_time = datetime.datetime.strptime(end_str, '%Y-%m-%d %H:%M')
                         now_time = datetime.datetime.now()
-
+                        
+                        start_time_china = start_time.astimezone(china_tz)
+                        #print(start_time_china)
                         # 计算比赛时长
                         duration = end_time - start_time
                         total_minutes = int(duration.total_seconds() / 60)
@@ -74,7 +77,7 @@ class get_nowcoder:
                         
                         # 格式化时间显示
                         time_display = f"{start_time.strftime('%Y-%m-%d %H:%M')} 至 {end_time.strftime('%Y-%m-%d %H:%M')}"
-                        
+                        #print(start_time_china,time_display)
                         if start_time > now_time:
                             # 添加到比赛列表（添加了link字段）
 
@@ -82,7 +85,7 @@ class get_nowcoder:
                                 'title': title,
                                 'time': time_display,
                                 'duration': duration_str,
-                                'start_time': start_time,
+                                'start_time': start_time_china,
                                 'platform': "牛客",
                                 'link': contest_link  # 添加比赛链接
                             })
@@ -112,12 +115,12 @@ class get_nowcoder:
 # 测试代码
 if __name__ == "__main__":
     contests = get_nowcoder.get_nc()
-    now = datetime.datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S')
-    for contest in contests:
-        print(f"比赛标题: {contest['title']}")
-        print(f"比赛链接: {contest['link']}")
-        print(f"比赛时间: {contest['time']}")
-        print(f"比赛开始时间: {contest['start_time']}")
+    # now = datetime.datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S')
+    # for contest in contests:
+    #     print(f"比赛标题: {contest['title']}")
+    #     print(f"比赛链接: {contest['link']}")
+    #     print(f"比赛时间: {contest['time']}")
+    #     print(f"比赛开始时间: {contest['start_time']}")
 
-        print(f"比赛时长: {contest['duration']}")
-        print("-" * 60)
+    #     print(f"比赛时长: {contest['duration']}")
+    #     print("-" * 60)

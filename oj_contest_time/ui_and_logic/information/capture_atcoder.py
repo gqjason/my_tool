@@ -2,7 +2,7 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import datetime
 import re
-
+import pytz
 class get_atcoder:
 
     def get_ac():
@@ -76,8 +76,12 @@ class get_atcoder:
                     # 转换为UTC时间（减去原始时区偏移）
                     start_time_utc = naive_time - datetime.timedelta(hours=offset_hours)
                     
+                    
                     # 转换为北京时间（UTC+8）
+                    china_tz = pytz.timezone('Asia/Shanghai')
                     start_time_beijing = start_time_utc + datetime.timedelta(hours=8)
+                    # 格式化北京时间为 "yy-mm-dd h:m:s+08:00"
+                    start_time_china = start_time_utc.replace(tzinfo=pytz.utc).astimezone(china_tz)
                     
                     # 解析持续时间
                     if ':' in duration_str:
@@ -104,6 +108,7 @@ class get_atcoder:
                     minutes = int((total_seconds % 3600) // 60)
                     duration_display = f"{hours}:{minutes:02d}:00"
                     
+                    #print(start_time_china)
                     now_time = datetime.datetime.now()
                     
                     if now_time < start_time_beijing and "AtCoder Beginner Contest" in title:
@@ -112,7 +117,7 @@ class get_atcoder:
                             'title': title,
                             'time': time_display,
                             'duration': duration_display,
-                            'start_time': start_time_beijing,  # 用于排序
+                            'start_time': start_time_china,  # 用于排序
                             'platform': "AtCoder",
                             'link': contest_url  # 添加比赛链接
                         })

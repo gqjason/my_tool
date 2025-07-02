@@ -1,0 +1,4 @@
+2025-07-04 18:17:56 [__main__] [INFO] [notification1.py:37]  初始化通知管理器，操作系统: Windows
+2025-07-04 18:17:56 [__main__] [INFO] [notification1.py:41]  创建临时目录: C:\Users\gq\AppData\Local\Temp\oj_notifier__2rdrt35
+2025-07-04 18:17:56 [WeChatManager] [INFO] [notification1.py:632]  数据库初始化完成: wechat_groups.db
+2025-07-04 18:17:56 [__main__] [INFO] [notification1.py:89]  已清理临时目录: C:\Users\gq\AppData\Local\Temp\oj_notifier__2rdrt35

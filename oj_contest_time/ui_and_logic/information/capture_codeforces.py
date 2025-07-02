@@ -26,10 +26,31 @@ class get_codeforces:
                 return []
                 
             contests = data.get('result', [])
-            
+        
+        
         except Exception as e:
-            print(f"请求API时出错: {e}")
-            return []
+            try:
+                API_URL = "http://codeforces.com/api/contest.list"
+                # 发送GET请求到API
+                response = requests.get(API_URL, timeout=10)
+                
+                # 检查响应状态
+                if response.status_code != 200:
+                    print(f"API请求失败，状态码: {response.status_code}")
+                    return []
+                
+                # 解析JSON响应
+                data = response.json()
+                
+                # 检查API响应状态
+                if data.get('status') != 'OK':
+                    print(f"API返回错误: {data.get('comment', '未知错误')}")
+                    return []
+                    
+                contests = data.get('result', [])
+            except Exception as e:
+                print(f"请求API时出错: {e}")
+                return []
         
         # 获取当前UTC时间
         now_utc = datetime.now().astimezone()
@@ -70,6 +91,7 @@ class get_codeforces:
             else:  # CODING
                 status = "进行中"
             
+            #print(start_time_utc)
             # 转换为MSK时区（UTC+3）
             china_tz = pytz.timezone('Asia/Shanghai')
             start_time_china = start_time_utc.replace(tzinfo=pytz.utc).astimezone(china_tz)

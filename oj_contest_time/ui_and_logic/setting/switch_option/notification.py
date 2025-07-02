@@ -9,6 +9,7 @@ import tempfile
 import atexit
 import re
 import shutil
+import sys
 from plyer import notification
 
 class NotificationManager:
@@ -45,48 +46,74 @@ class NotificationManager:
         except Exception as e:
             self.logger.error(f"清理临时目录失败: {e}")
     
-    def show_notification(self, title, message, duration=3):
+    def show_notification(self, title, message, duration=10, icon_path=None):
         """
-        显示系统通知
+        显示系统通知（增强版）
         
         参数:
             title: 通知标题
-            message: 通知内容
-            duration: 通知显示时间（秒）
+            message: 通知内容（支持多行）
+            duration: 通知显示时间（秒），默认10秒
+            icon_path: 自定义图标路径
         """
         try:
-            notification.notify(
-                title=title,
-                message=message,
-                app_name=self.app_name,
-                timeout=duration
-            )
-            self.logger.info(f"已发送通知: {title} - {message}")
+            # 格式化消息（确保多行显示）
+            formatted_message = self._format_message(message)
+            
+            # 设置通知参数
+            kwargs = {
+                "title": title,
+                "message": formatted_message,
+                "app_name": self.app_name,
+                "timeout": duration
+            }
+            
+            # 添加图标（如果可用）
+            if icon_path and os.path.exists(icon_path):
+                kwargs["app_icon"] = icon_path
+                self.logger.info(f"使用自定义图标: {icon_path}")
+            
+            notification.notify(**kwargs)
+            self.logger.info(f"已发送通知: {title}")
             return True
         except Exception as e:
             self.logger.error(f"发送通知失败: {e}")
             return False
     
-    def schedule_system_notification(self, title, message, delay_seconds):
+    def _format_message(self, message):
+        """格式化通知消息，确保多行显示"""
+        # 添加换行符确保多行显示
+        if isinstance(message, list):
+            return "\n".join(message)
+        if "\n" not in message and len(message) > 50:
+            # 在适当位置添加换行符
+            parts = message.split("，")
+            if len(parts) > 1:
+                return "，\n".join(parts)
+        return message
+    
+    def schedule_system_notification(self, title, contest, message, delay_seconds, icon_path=None):
         """
         将定时通知注入系统任务调度器
         即使程序关闭后也能触发通知
         
         参数:
             title: 通知标题
+            contest: 比赛标识（用于创建唯一任务ID）
             message: 通知内容
             delay_seconds: 延迟时间（秒）
+            icon_path: 自定义图标路径
         """
         try:
             # 计算触发时间
             trigger_time = datetime.datetime.now() + datetime.timedelta(seconds=delay_seconds)
             
             if self.os_type == "Windows":
-                return self._schedule_windows(title, message, trigger_time)
+                return self._schedule_windows(title, contest, message, trigger_time, icon_path)
             elif self.os_type == "Darwin":
-                return self._schedule_macos(title, message, trigger_time)
+                return self._schedule_macos(title, contest, message, trigger_time, icon_path)
             elif self.os_type == "Linux":
-                return self._schedule_linux(title, message, trigger_time)
+                return self._schedule_linux(title, contest, message, trigger_time, icon_path)
             else:
                 self.logger.warning(f"不支持的操作系统: {self.os_type}")
                 return False
@@ -113,20 +140,37 @@ class NotificationManager:
             self.logger.error(f"删除通知失败: {e}")
             return False
     
-    def _schedule_windows(self, title, message, trigger_time):
-        """Windows 任务调度实现"""
+    def _schedule_windows(self, title, contest, message, trigger_time, icon_path):
+        """Windows 任务调度实现（增强版）"""
         self.logger.info(f"为Windows创建定时通知: {title}")
         
         # 创建唯一任务ID
-        task_id = f"OJNotifier_{int(time.time())}"
+        task_id = f"OJNotifier_{int(time.time())}_{contest}"
+        
+        # 格式化消息
+        formatted_message = self._format_message(message).replace('"', '""')
         
         # 创建PowerShell脚本
         script_path = os.path.join(self.temp_dir, f"{task_id}.ps1")
+        
+        # 图标处理
+        icon_cmd = ""
+        if icon_path and os.path.exists(icon_path):
+            # 复制图标到临时目录
+            icon_ext = os.path.splitext(icon_path)[1]
+            temp_icon = os.path.join(self.temp_dir, f"{task_id}{icon_ext}")
+            shutil.copy(icon_path, temp_icon)
+            icon_cmd = f"$AppId = 'OJContestNotifier'\n" \
+                       f"[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($AppId).Show($toast)"
+            app_name_line = f"$AppId = '{self.app_name}'"
+        else:
+            app_name_line = f"$AppId = '{self.app_name}'"
+        
         ps_script = f"""
 # 通知参数
 $notification = @{{
     Title = "{title}"
-    Message = "{message}"
+    Message = "{formatted_message}"
     AppName = "{self.app_name}"
 }}
 
@@ -137,8 +181,21 @@ $xml = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent($
 $text = $xml.SelectNodes("//text")
 $text[0].AppendChild($xml.CreateTextNode($notification.Title)) | Out-Null
 $text[1].AppendChild($xml.CreateTextNode($notification.Message)) | Out-Null
+
+# 设置长持续时间
+$toast = $xml.SelectSingleNode("//toast")
+if (-not $toast) {{
+    $toast = $xml.CreateElement("toast")
+    $xml.DocumentElement.AppendChild($toast) | Out-Null
+}}
+$toast.SetAttribute("duration", "long")
+
+# 创建通知对象
 $toast = New-Object Windows.UI.Notifications.ToastNotification $xml
-[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($notification.AppName).Show($toast)
+
+# 显示通知
+{app_name_line}
+[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($AppId).Show($toast)
 
 # 任务完成标识
 Set-Content -Path "{os.path.join(self.temp_dir, f"{task_id}.done")}" -Value "Completed"
@@ -193,18 +250,24 @@ Set-Content -Path "{os.path.join(self.temp_dir, f"{task_id}.done")}" -Value "Com
         self.logger.info(f"共删除 {len(tasks)} 个Windows通知任务")
         return True
     
-    def _schedule_macos(self, title, message, trigger_time):
-        """macOS 任务调度实现"""
+    def _schedule_macos(self, title, contest, message, trigger_time, icon_path):
+        """macOS 任务调度实现（增强版）"""
         self.logger.info(f"为macOS创建定时通知: {title}")
         
         # 计算时间戳
         timestamp = int(trigger_time.timestamp())
-        task_id = f"com.oj.notification.{timestamp}"
+        task_id = f"com.oj.notification.{timestamp}.{contest}"
+        
+        # 格式化消息
+        formatted_message = self._format_message(message).replace('"', r'\"')
         
         # 创建通知脚本
         script_path = os.path.join(self.temp_dir, f"{task_id}.sh")
         script_content = f"""#!/bin/bash
-osascript -e 'display notification "{message}" with title "{title}"'
+# 显示通知
+osascript -e 'display notification "{formatted_message}" with title "{title}"'
+
+# 任务完成标识
 touch "{os.path.join(self.temp_dir, f"{task_id}.done")}"
 """
         with open(script_path, 'w') as f:
@@ -290,19 +353,35 @@ touch "{os.path.join(self.temp_dir, f"{task_id}.done")}"
         self.logger.info(f"共删除 {len(tasks)} 个macOS通知任务")
         return True
     
-    def _schedule_linux(self, title, message, trigger_time):
-        """Linux 任务调度实现"""
+    def _schedule_linux(self, title, contest, message, trigger_time, icon_path):
+        """Linux 任务调度实现（增强版）"""
         self.logger.info(f"为Linux创建定时通知: {title}")
         
         # 创建唯一任务ID
-        task_id = f"oj_notifier_{int(time.time())}"
+        task_id = f"oj_notifier_{int(time.time())}_{contest}"
+        
+        # 格式化消息
+        formatted_message = self._format_message(message).replace('"', r'\"')
+        
+        # 图标处理
+        icon_cmd = ""
+        if icon_path and os.path.exists(icon_path):
+            # 复制图标到临时目录
+            icon_ext = os.path.splitext(icon_path)[1]
+            temp_icon = os.path.join(self.temp_dir, f"{task_id}{icon_ext}")
+            shutil.copy(icon_path, temp_icon)
+            icon_cmd = f"-i {temp_icon}"
         
         # 创建通知脚本
         script_path = os.path.join(self.temp_dir, f"{task_id}.sh")
         script_content = f"""#!/bin/bash
 export DISPLAY=:0
 export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus
-notify-send -u critical -t 10000 "{title}" "{message}"
+
+# 显示通知（右侧通知区域）
+notify-send -u critical -t 10000 {icon_cmd} "{title}" "{formatted_message}"
+
+# 任务完成标识
 touch "{os.path.join(self.temp_dir, f"{task_id}.done")}"
 """
         with open(script_path, 'w') as f:
@@ -376,7 +455,7 @@ touch "{os.path.join(self.temp_dir, f"{task_id}.done")}"
         """清理临时目录中的完成标记文件"""
         try:
             for filename in os.listdir(self.temp_dir):
-                if filename.endswith(".done") or filename.endswith(".id"):
+                if filename.endswith(".done") or filename.endswith(".id") or filename.endswith(".png") or filename.endswith(".ico"):
                     os.remove(os.path.join(self.temp_dir, filename))
             self.logger.info("已清理临时标记文件")
         except Exception as e:
@@ -418,29 +497,44 @@ touch "{os.path.join(self.temp_dir, f"{task_id}.done")}"
 
 # 测试代码
 if __name__ == "__main__":
-    import sys
-    
     # 配置日志
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
     
-    nm = NotificationManager("OJ通知测试")
+    # 获取当前脚本所在目录
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # 尝试使用本地图标（如果有）
+    icon_path = None
+    for icon_file in ["notification_icon.png", "notification_icon.ico"]:
+        test_icon = os.path.join(base_dir, icon_file)
+        if os.path.exists(test_icon):
+            icon_path = test_icon
+            break
+    
+    nm = NotificationManager("OJ比赛提醒")
     
     if len(sys.argv) > 1 and sys.argv[1] == "clean":
         # 清理所有通知
         nm.remove_all_scheduled_notifications()
         print("已清理所有系统通知")
     else:
-        # 测试即时通知
-        nm.show_notification("即时通知测试", "这是一个即时系统通知测试！")
+        # 测试即时通知（带图标）
+        nm.show_notification(
+            "比赛提醒", 
+            "Codeforces Round #789 即将开始！\n时间：2023-05-15 19:35\n持续时间：2小时15分钟", 
+            icon_path=icon_path
+        )
         
         # 测试系统级定时通知（60秒后触发）
         nm.schedule_system_notification(
-            "定时通知测试", 
-            "这是一个系统级定时通知测试，即使程序关闭也会触发！", 
-            60
+            "比赛开始提醒", 
+            "CF789",
+            "Codeforces Round #789 已经开始！\n请尽快参加比赛！", 
+            60,
+            icon_path=icon_path
         )
         print("已创建系统级定时通知，将在60秒后触发。现在可以关闭程序。")
         

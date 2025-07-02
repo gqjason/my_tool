@@ -7,12 +7,13 @@ from .setting.setting_logic import SettingsManager
 class AppUI:
     """负责应用程序的用户界面"""
     def __init__(self, root, logic):
+        super().__init__()
         self.root = root
         self.logic = logic  # 引用逻辑类的实例
         
         # 设置UI回调
         self.logic.ui_callback = self.update_ui
-        
+        self.settings_manager = SettingsManager(main_window=self)
         self.root.title("OJ比赛信息查询系统")
         self.root.geometry("900x650")
         self.root.minsize(800, 550)
@@ -167,7 +168,7 @@ class AppUI:
         """打开设置对话框"""
         # 从逻辑类获取当前配置
         # 创建设置对话框
-        self.settings_manager = SettingsManager()
+        self.settings_manager = SettingsManager(main_window=self)
         SettingsDialog(
             self.root,self.settings_manager
         )

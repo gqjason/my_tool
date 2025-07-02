@@ -155,55 +155,37 @@ class SettingsDialog:
         )
         autostart_check.pack(anchor="w", pady=2)
 
-        # 是否最小化到后台运行
-        self.minimize_to_tray_var = tk.BooleanVar(value=self.settings_manager.DEFAULT_SETTINGS["minimize_to_tray"])
-        minimize_to_tray_check = ttk.Checkbutton(
-            frame,
-            text="最小化到后台运行",
-            variable=self.minimize_to_tray_var
-        )
-        minimize_to_tray_check.pack(anchor="w", pady=2)
+        # # 是否最小化到后台运行
+        # self.minimize_to_tray_var = tk.BooleanVar(value=self.settings_manager.DEFAULT_SETTINGS["minimize_to_tray"])
+        # minimize_to_tray_check = ttk.Checkbutton(
+        #     frame,
+        #     text="最小化到后台运行",
+        #     variable=self.minimize_to_tray_var
+        # )
+        # minimize_to_tray_check.pack(anchor="w", pady=2)
 
-        # 开机最小化
-        self.autostart_minimize_var = tk.BooleanVar(value=self.settings_manager.DEFAULT_SETTINGS["autostart_minimize"])
-        autostart_minimize_check = ttk.Checkbutton(
-            frame,
-            text="开机时最小化",
-            variable=self.autostart_minimize_var
-        )
-        autostart_minimize_check.pack(anchor="w", pady=2)
+        # # 开机最小化
+        # self.autostart_minimize_var = tk.BooleanVar(value=self.settings_manager.DEFAULT_SETTINGS["autostart_minimize"])
+        # autostart_minimize_check = ttk.Checkbutton(
+        #     frame,
+        #     text="开机时最小化",
+        #     variable=self.autostart_minimize_var
+        # )
+        # autostart_minimize_check.pack(anchor="w", pady=2)
         
     def create_notify_frame(self, frame):
         # 桌面提示选项
+        
         self.desktop_notify_var = tk.BooleanVar(value=self.settings_manager.DEFAULT_SETTINGS["desktop_notify"])
         desktop_notify_check = ttk.Checkbutton(
             frame,
-            text="启用桌面通知提示",
-            command= self.pr(1),
+            text="启用桌面通知提示\n（将会开启系统定时通知）",
             variable=self.desktop_notify_var
         )
         desktop_notify_check.pack(anchor="w", pady=2)
         
-        choice = tk.StringVar(value="")  # 初始无选中
 
-        # 2. 创建 Radiobutton 组件
-        rb1 = tk.Radiobutton(
-            frame,
-            text="选项 A",
-            variable=choice,  # 绑定到同一变量
-            value="A",        # 选中时变量的值
-            command=lambda: print(f"选中: {choice.get()}")
-        )
-        rb1.pack(anchor="w")
-
-        rb2 = tk.Radiobutton(
-            frame,
-            text="选项 B",
-            variable=choice,
-            value="B",
-            command=lambda: print(f"选中: {choice.get()}")
-        )
-        rb2.pack(anchor="w")
+       
         
         
         

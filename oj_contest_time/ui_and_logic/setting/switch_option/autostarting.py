@@ -4,11 +4,14 @@ import platform
 import os
 import plistlib
 class AutoStartOption:
+    def __init__(self):
+        # If you have a logger, assign it here. Otherwise, use print as fallback.
+        self.logger = None
+
     def configure_autostart(self, enable):
         """配置开机自启动（跨平台实现）"""
-        import platform
         os_type = platform.system()
-        
+        print(os_type)
         try:
             if os_type == "Windows":
                 self._configure_windows_autostart(enable)
@@ -17,27 +20,42 @@ class AutoStartOption:
             elif os_type == "Linux":
                 self._configure_linux_autostart(enable)
         except Exception as e:
-            self.logger.error(f"配置开机自启动失败: {e}")
-            
+            print("unsuccess!")
+                 
+                
     def _configure_windows_autostart(self, enable):
         """Windows开机自启动配置"""
-        import winreg
-        import sys
 
-        
         # 获取当前可执行文件路径
         exe_path = sys.executable
         
         # 注册表路径
         key_path = r"Software\Microsoft\Windows\CurrentVersion\Run"
-        app_name = "MyApp"
+        app_name = "CaptureOJContestTime"
         
         if enable:
-            # 创建注册表项
-            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_WRITE) as key:
+            # 创建注册表项，如果不存在则创建
+            try:
+                key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_SET_VALUE)
+            except FileNotFoundError:
+                key = winreg.CreateKey(winreg.HKEY_CURRENT_USER, key_path)
+            with key:
                 winreg.SetValueEx(key, app_name, 0, winreg.REG_SZ, f'"{exe_path}" --minimized')
-            self.logger.info("Windows开机自启动已启用")
+            if self.logger:
+                self.logger.info("Windows开机自启动已启用")
+            else:
+                print("Windows开机自启动已启用")
         else:
+            # 删除注册表项
+            try:
+                with winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_SET_VALUE) as key:
+                    winreg.DeleteValue(key, app_name)
+                if self.logger:
+                    self.logger.info("Windows开机自启动已禁用")
+                else:
+                    print("Windows开机自启动已禁用")
+            except FileNotFoundError:
+                pass  # 如果键不存在，忽略错误
             # 删除注册表项
             try:
                 with winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_WRITE) as key:
@@ -49,10 +67,13 @@ class AutoStartOption:
     def _configure_macos_autostart(self, enable):
         """macOS开机自启动配置"""
         # 获取当前可执行文件路径
-        exe_path = sys.executable
+        if self.logger:
+            self.logger.info(f"macOS开机自启动 {'已启用' if enable else '已禁用'}")
+        else:
+            print(f"macOS开机自启动 {'已启用' if enable else '已禁用'}")
         label = "com.myapp.autostart"
         plist_path = os.path.expanduser(f"~/Library/LaunchAgents/{label}.plist")
-
+        exe_path = sys.executable
         if enable:
             plist_content = {
             "Label": label,
@@ -71,6 +92,11 @@ class AutoStartOption:
     def _configure_linux_autostart(self, enable):
         """Linux开机自启动配置"""
         # 在Linux上，通常需要创建.desktop文件
+
+        if self.logger:
+            self.logger.info(f"Linux开机自启动 {'已启用' if enable else '已禁用'}")
+        else:
+            print(f"Linux开机自启动 {'已启用' if enable else '已禁用'}")
         autostart_dir = os.path.expanduser("~/.config/autostart")
         os.makedirs(autostart_dir, exist_ok=True)
         desktop_file = os.path.join(autostart_dir, "myapp-autostart.desktop")

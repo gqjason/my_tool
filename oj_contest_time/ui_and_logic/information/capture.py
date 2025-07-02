@@ -1,6 +1,6 @@
-from get_information.nowcoder import get_nowcoder
-from get_information.atcoder import get_atcoder
-from get_information.codeforces import get_codeforces
+from .capture_nowcoder import get_nowcoder
+from .capture_atcoder import get_atcoder
+from .capture_codeforces import get_codeforces
 from datetime import datetime, timedelta, timezone
 
 class Main:

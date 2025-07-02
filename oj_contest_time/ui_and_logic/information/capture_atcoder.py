@@ -18,12 +18,6 @@ class get_atcoder:
         soup = BeautifulSoup(html, 'html.parser')
         contests = []
         
-        # 获取当前时间（UTC）
-        now_utc = datetime.datetime.utcnow()
-        # 转换为北京时间（UTC+8）
-        beijing_offset = datetime.timedelta(hours=8)
-        now_beijing = now_utc + beijing_offset
-        
         # 查找所有比赛表
         contest_tables = soup.find_all('div', id=re.compile(r'contest-table-'))
         
@@ -110,15 +104,18 @@ class get_atcoder:
                     minutes = int((total_seconds % 3600) // 60)
                     duration_display = f"{hours}:{minutes:02d}:00"
                     
+                    now_time = datetime.datetime.now()
+                    
+                    if now_time < start_time_beijing and "AtCoder Beginner Contest" in title:
                     # 添加到比赛列表（添加了link字段）
-                    contests.append({
-                        'title': title,
-                        'time': time_display,
-                        'duration': duration_display,
-                        'start_time': start_time_utc,  # 用于排序
-                        'platform': "AtCoder",
-                        'link': contest_url  # 添加比赛链接
-                    })
+                        contests.append({
+                            'title': title,
+                            'time': time_display,
+                            'duration': duration_display,
+                            'start_time': start_time_beijing,  # 用于排序
+                            'platform': "AtCoder",
+                            'link': contest_url  # 添加比赛链接
+                        })
                     
                 except Exception as e:
                     print(f"解析比赛时间失败: {e}")

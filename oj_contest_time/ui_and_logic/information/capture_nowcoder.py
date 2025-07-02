@@ -14,8 +14,6 @@ class get_nowcoder:
         soup = BeautifulSoup(html, 'html.parser')
         contests = []
 
-        # 获取当前时间
-        now = datetime.datetime.now()
 
         # 定位所有比赛模块
         for section in soup.find_all('div', class_='platform-mod'):
@@ -60,11 +58,11 @@ class get_nowcoder:
                         end_str, duration = end_str.split('\n')
                         end_str = end_str.strip()
                         duration = duration[5:-1]
-                        start_time = datetime.datetime.strptime(start_str, '%Y-%m-%d %H:%M')
-                        # 将中国时间（UTC+8）转为UTC时间
-                        start_time_utc = start_time - datetime.timedelta(hours=8)
-                        end_time = datetime.datetime.strptime(end_str, '%Y-%m-%d %H:%M')
                         
+                        start_time = datetime.datetime.strptime(start_str, '%Y-%m-%d %H:%M')
+                        end_time = datetime.datetime.strptime(end_str, '%Y-%m-%d %H:%M')
+                        now_time = datetime.datetime.now()
+
                         # 计算比赛时长
                         duration = end_time - start_time
                         total_minutes = int(duration.total_seconds() / 60)
@@ -77,15 +75,27 @@ class get_nowcoder:
                         # 格式化时间显示
                         time_display = f"{start_time.strftime('%Y-%m-%d %H:%M')} 至 {end_time.strftime('%Y-%m-%d %H:%M')}"
                         
-                        # 添加到比赛列表（添加了link字段）
-                        contests.append({
-                            'title': title,
-                            'time': time_display,
-                            'duration': duration_str,
-                            'start_time': start_time_utc,
-                            'platform': "牛客",
-                            'link': contest_link  # 添加比赛链接
-                        })
+                        if start_time > now_time:
+                            # 添加到比赛列表（添加了link字段）
+
+                            contests.append({
+                                'title': title,
+                                'time': time_display,
+                                'duration': duration_str,
+                                'start_time': start_time,
+                                'platform': "牛客",
+                                'link': contest_link  # 添加比赛链接
+                            })
+                            
+                        # # 添加到比赛列表（添加了link字段）
+                        # contests.append({
+                        #     'title': title,
+                        #     'time': time_display,
+                        #     'duration': duration_str,
+                        #     'start_time': start_time,
+                        #     'platform': "牛客",
+                        #     'link': contest_link  # 添加比赛链接
+                        # })
 
                     except Exception as e:
                         print(f"解析时间时出错: {e}")
@@ -102,9 +112,12 @@ class get_nowcoder:
 # 测试代码
 if __name__ == "__main__":
     contests = get_nowcoder.get_nc()
-    # for contest in contests:
-    #     print(f"比赛标题: {contest['title']}")
-    #     print(f"比赛链接: {contest['link']}")
-    #     print(f"比赛时间: {contest['time']}")
-    #     print(f"比赛时长: {contest['duration']}")
-    #     print("-" * 60)
+    now = datetime.datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S')
+    for contest in contests:
+        print(f"比赛标题: {contest['title']}")
+        print(f"比赛链接: {contest['link']}")
+        print(f"比赛时间: {contest['time']}")
+        print(f"比赛开始时间: {contest['start_time']}")
+
+        print(f"比赛时长: {contest['duration']}")
+        print("-" * 60)

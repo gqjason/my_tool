@@ -32,7 +32,7 @@ class get_codeforces:
             return []
         
         # 获取当前UTC时间
-        now_utc = datetime.utcnow()
+        now_utc = datetime.now().astimezone()
         
         # 过滤和格式化比赛信息
         filtered_contests = []
@@ -80,15 +80,18 @@ class get_codeforces:
             # 构建比赛链接
             contest_link = f"https://codeforces.com/contest/{contest_id}"
             
+            now_time = datetime.now().astimezone()
+
+            if start_time_china > now_time:
             # 添加到结果列表（添加了link字段）
-            filtered_contests.append({
-                'title': title,
-                'time': time_display,
-                'duration': duration_str,
-                'start_time': start_time_china,
-                'platform': "Codeforces",
-                'link': contest_link  # 添加比赛链接
-            })
+                filtered_contests.append({
+                    'title': title,
+                    'time': time_display,
+                    'duration': duration_str,
+                    'start_time': start_time_china,
+                    'platform': "Codeforces",
+                    'link': contest_link  # 添加比赛链接
+                })
         
         # 按开始时间排序（最近的在前）
         filtered_contests.sort(key=lambda x: x['start_time'])

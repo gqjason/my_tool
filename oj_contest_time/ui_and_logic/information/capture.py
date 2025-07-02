@@ -3,7 +3,7 @@ from .capture_atcoder import get_atcoder
 from .capture_codeforces import get_codeforces
 from datetime import datetime, timedelta, timezone
 
-class Main:
+class CaptureAllInformation:
     
     def get_all_website():
         res = []
@@ -15,7 +15,7 @@ class Main:
     
     def get_upcoming_contests():
         # 获取所有比赛
-        res = Main.get_all_website()
+        res = CaptureAllInformation.get_all_website()
         
         # 确保所有时间都是时区感知的 UTC 时间
         for contest in res:
@@ -58,8 +58,8 @@ class Main:
         return upcoming_today
 
     def run():
-        upcoming_contest = Main.get_upcoming_contests()
-        today_contest = Main.filter_today_competition(upcoming_contest)
+        upcoming_contest = CaptureAllInformation.get_upcoming_contests()
+        today_contest = CaptureAllInformation.filter_today_competition(upcoming_contest)
         
         # print("[OJ_Bot]")
         # if not today_contest:
@@ -83,14 +83,14 @@ class Main:
     
     def return_today_upcoming_contest():
         
-        upcoming_contest = Main.get_upcoming_contests()
-        today_contest = Main.filter_today_competition(upcoming_contest)
+        upcoming_contest = CaptureAllInformation.get_upcoming_contests()
+        today_contest = CaptureAllInformation.filter_today_competition(upcoming_contest)
         return today_contest
     
     def return_all_upcoming_contest():
-        upcoming_contest = Main.get_upcoming_contests()
+        upcoming_contest = CaptureAllInformation.get_upcoming_contests()
         return upcoming_contest
 
     
 if __name__ == '__main__':
-    Main.run()
+    CaptureAllInformation.run()

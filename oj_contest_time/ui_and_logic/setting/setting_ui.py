@@ -43,7 +43,8 @@ class SettingsDialog:
         
         # 按钮框架
         button_frame = ttk.Frame(setting_frame)
-        button_frame.pack(fill=tk.X, pady=(20, 0))        
+        button_frame.pack(fill=tk.X, pady=(20, 0))       
+         
         # 常规设置选项卡
         general_frame = ttk.Frame(notebook, padding=10)
         notebook.add(general_frame, text="常规设置")
@@ -178,6 +179,33 @@ class SettingsDialog:
         desktop_notify_check = ttk.Checkbutton(
             frame,
             text="启用桌面通知提示",
+            command= self.pr(1),
             variable=self.desktop_notify_var
         )
         desktop_notify_check.pack(anchor="w", pady=2)
+        
+        choice = tk.StringVar(value="")  # 初始无选中
+
+        # 2. 创建 Radiobutton 组件
+        rb1 = tk.Radiobutton(
+            frame,
+            text="选项 A",
+            variable=choice,  # 绑定到同一变量
+            value="A",        # 选中时变量的值
+            command=lambda: print(f"选中: {choice.get()}")
+        )
+        rb1.pack(anchor="w")
+
+        rb2 = tk.Radiobutton(
+            frame,
+            text="选项 B",
+            variable=choice,
+            value="B",
+            command=lambda: print(f"选中: {choice.get()}")
+        )
+        rb2.pack(anchor="w")
+        
+        
+        
+    def pr(self, a):
+        print(a)

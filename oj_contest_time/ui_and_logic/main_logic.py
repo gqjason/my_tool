@@ -2,7 +2,7 @@
 import threading
 import time
 
-from .information.capture import Main
+from .information.capture import CaptureAllInformation
 from .setting.setting_logic import SettingsManager
 class AppLogic:
     
@@ -61,7 +61,7 @@ class AppLogic:
             self._update_ui("")
             self._update_ui("> 正在获取比赛数据...\n")
 
-            today_contest = Main.return_today_upcoming_contest()
+            today_contest = CaptureAllInformation.return_today_upcoming_contest()
             self._update_ui("[OJ_Bot]\n", clear=True)
             
             if not today_contest:
@@ -88,7 +88,7 @@ class AppLogic:
             self._update_ui("")
             self._update_ui("> 正在获取比赛数据...\n")
 
-            upcoming_contest = Main.return_all_upcoming_contest()
+            upcoming_contest = CaptureAllInformation.return_all_upcoming_contest()
             self._update_ui("[OJ_Bot]\n", clear=True)
             
             if not upcoming_contest:

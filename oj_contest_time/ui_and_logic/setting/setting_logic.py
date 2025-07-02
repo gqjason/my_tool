@@ -2,7 +2,12 @@
 import json
 import os
 import logging
+import platform
 from pathlib import Path
+
+from .switch_option.autostarting import AutoStartOption as ASO
+from .switch_option.minimize_to_tray import MinimizeToTray as MTT
+from ..information.capture import CaptureAllInformation as CAI
 
 class SettingsManager:
     """管理应用程序设置的类"""
@@ -114,9 +119,18 @@ class SettingsManager:
         # 示例：处理开机自启动
         if self.settings["autostart"]:
             self.logger.info("配置开机自启动...")
-            # 实际实现需要根据操作系统编写
+            ASO.configure_autostart(True)
         else:
             self.logger.info("禁用开机自启动...")
+            ASO.configure_autostart(False)
+        
+        if self.settings["minimize_to_tray"]:
+            self.logger.info("开启最小化到后台运行...")
+            MTT.enable_running
+        else:
+            self.logger.info("关闭最小化到后台运行...")
+            MTT.disable_running
+            
         
         # 示例：处理通知设置
         if self.settings["desktop_notify"]:
@@ -127,3 +141,9 @@ class SettingsManager:
     def handle_cancel(self, dialog):
         """处理取消按钮点击事件"""
         dialog.destroy()
+        
+    def switch_system_notification(enable):
+        if enable:
+            res = CAI.return_today_upcoming_contest()["start_time"]
+
+        

@@ -179,10 +179,16 @@ class SettingsDialog:
         self.desktop_notify_var = tk.BooleanVar(value=self.settings_manager.DEFAULT_SETTINGS["desktop_notify"])
         desktop_notify_check = ttk.Checkbutton(
             frame,
-            text="启用桌面通知提示\n（将会开启系统定时通知）",
+            text="启用邮箱通知提示\n（将会开启定时通知）",
             variable=self.desktop_notify_var
         )
         desktop_notify_check.pack(anchor="w", pady=2)
+        
+        # 添加一个输入框示例：设置通知间隔（分钟）
+        ttk.Label(frame, text="接收邮箱:").pack(fill=tk.X,anchor="w", pady=(10, 2))
+        self.notify_interval_var = tk.StringVar(value=str(self.settings_manager.DEFAULT_SETTINGS["notify_receiver_email"]))
+        notify_interval_entry = ttk.Entry(frame, textvariable=self.notify_interval_var, width=40)
+        notify_interval_entry.pack(anchor="w", pady=2)
         
 
        

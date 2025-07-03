@@ -1,8 +1,7 @@
 {
     "autostart": true,
-    "minimize_to_tray": true,
-    "autostart_minimize": true,
-    "desktop_notify": false,
+    "desktop_notify": true,
+    "notify_receiver_email": "241731627@m.gduf.edu.cn",
     "theme": "light",
     "language": "zh_CN"
 }

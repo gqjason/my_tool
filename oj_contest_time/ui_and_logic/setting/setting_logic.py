@@ -11,13 +11,15 @@ from .switch_option.autostarting import AutoStartOption as ASO
 from .switch_option.minimize_to_tray import MinimizeToTray as MTT
 from ..information.capture import CaptureAllInformation as CAI
 from .switch_option.notification import NotificationManager as NM
+from .switch_option.email_notification import EmailNotificationManager as ENM
 class SettingsManager:
     """管理应用程序设置的类"""
     DEFAULT_SETTINGS = {
         "autostart": False,
-        "minimize_to_tray": True,
-        "autostart_minimize": False,
+        # "minimize_to_tray": True,
+        # "autostart_minimize": False,
         "desktop_notify": True,
+        "notify_receiver_email":"",
         "theme": "light",
         "language": "zh_CN"
     }
@@ -93,6 +95,7 @@ class SettingsManager:
         # ui_instance.minimize_to_tray_var.set(self.get_setting("minimize_to_tray"))
         # ui_instance.autostart_minimize_var.set(self.get_setting("autostart_minimize"))
         ui_instance.desktop_notify_var.set(self.get_setting("desktop_notify"))
+        ui_instance.notify_interval_var.set(self.get_setting("notify_receiver_email"))
     
     def handle_save(self, ui_instance):
         """处理保存按钮点击事件"""
@@ -101,7 +104,9 @@ class SettingsManager:
             "autostart": ui_instance.autostart_var.get(),
             # "minimize_to_tray": ui_instance.minimize_to_tray_var.get(),
             # "autostart_minimize": ui_instance.autostart_minimize_var.get(),
-            "desktop_notify": ui_instance.desktop_notify_var.get()
+            "desktop_notify": ui_instance.desktop_notify_var.get(),
+            "notify_receiver_email": ui_instance.notify_interval_var.get()
+            
         }
         
         # 更新设置
@@ -146,12 +151,12 @@ class SettingsManager:
         nm.remove_all_scheduled_notifications()
         if self.settings["desktop_notify"]:
             self.logger.info("启用桌面通知...")
-            nm.show_notification("启用桌面通知", "正在启用桌面通知")
+            # nm.show_notification("启用桌面通知", "正在启用桌面通知")
             self.switch_system_notification(True)
             
         else:
             self.logger.info("禁用桌面通知...")
-            nm.show_notification("禁用桌面通知", "已关闭桌面通知")
+            # nm.show_notification("禁用桌面通知", "已关闭桌面通知")
     
     def handle_cancel(self, dialog):
         """处理取消按钮点击事件"""
@@ -162,20 +167,26 @@ class SettingsManager:
             try:
                 nm = NM()
                 contest_message = CAI.return_all_upcoming_contest()
+                ss = "smtp.qq.com"
+                sp = 465
+                se = "1377592898@qq.com"
+                spw = "hbgatafzcuebhcjc"
+                rer = self.get_setting("notify_receiver_email")
+                #rer = "241731627@m.gduf.edu.cn"
                 
                 for item in contest_message:
                     title = "比赛即将在60分钟后开始"
-                    message = f"\n标题: {item["title"]}\n\
-                        网站: {item["link"]}\n\
-                        时间: {item["start_time"].strftime('%Y-%m-%d %H:%M:%S')}"
+                    message = f"标题: {item["title"]}\n网站: {item["link"]}\n时间: {item["start_time"].strftime('%Y-%m-%d %H:%M:%S')}"
                     
                     now_time = datetime.datetime.now().timestamp()
                     start_time = item["start_time"].timestamp()
                     duration = start_time - now_time - 3600
                     contest = ''.join(i if i.isalnum() else '_' for i in item["title"])
-                    print(f"----------------------{duration}-----------------------------{item["start_time"]}")
-                    nm.schedule_system_notification(title, contest, message, duration)
-                nm.show_notification("启用桌面通知", "启用桌面通知成功")
+                    print(f"----------------------{duration}-----------------------------\"email: \"{rer}")
+                    enm = ENM(ss, sp, se, spw, rer, title, message)
+                    enm.go()
+                    
+                    
             except Exception as e:
                 self.logger.error(f"发送通知失败: {e}")
                 nm.show_notification("发送失败", "通知发送失败")

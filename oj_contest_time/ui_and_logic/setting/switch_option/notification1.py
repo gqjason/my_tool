@@ -18,7 +18,7 @@ import pyautogui
 import pyperclip
 import pygetwindow as gw
 from plyer import notification
-
+import psutil
 class NotificationManager:
     """系统通知管理器（支持持久化定时任务和通知清理）"""
     
@@ -553,6 +553,7 @@ Set-Content -Path "{os.path.join(self.temp_dir, f"{task_id}.done")}" -Value "Com
         if self.os_type == "Windows":
             try:
                 import winreg
+
                 with winreg.OpenKey(winreg.HKEY_CURRENT_USER, 
                                   r"SOFTWARE\Microsoft\Windows\CurrentVersion\Notifications\Settings") as key:
                     enabled = winreg.QueryValueEx(key, "NOC_GLOBAL_SETTING_TOASTS_ENABLED")[0]
@@ -599,7 +600,7 @@ class WeChatNotificationManager:
         self._init_database()
         
         # 微信窗口标题（根据语言可能不同）
-        self.wechat_titles = ["微信", "WeChat", "微信(Windows)"]
+        self.wechat_titles = ["微信", "微信(Windows)"]
         
         # 启动定时任务线程
         self.running = True
@@ -644,6 +645,7 @@ class WeChatNotificationManager:
             for title in self.wechat_titles:
                 if gw.getWindowsWithTitle(title):
                     return True
+                
             return False
         except Exception as e:
             self.logger.error(f"检查微信运行状态失败: {e}")
@@ -695,7 +697,7 @@ class WeChatNotificationManager:
             win = gw.getWindowsWithTitle(self.wechat_titles[0])[0]
             x, y, w, h = win.left, win.top, win.width, win.height
             pyautogui.click(x + w // 2, y + h - 50)
-            time.sleep(0.2)
+            time.sleep(0.5)
             # 检查是否成功进入群聊
             # 这里可以添加一些检查逻辑，比如检查窗口标题等
             return True
@@ -793,19 +795,12 @@ class WeChatNotificationManager:
             
             # 发送消息
             try:
+                pyperclip.copy(message)
+                pyautogui.hotkey('ctrl', 'v')
+                time.sleep(0.2)
+                pyautogui.press('enter')
                 # 分割长消息为多行
-                if len(message) > 100:
-                    # 按行发送
-                    for line in message.split('\n'):
-                        if line.strip():
-                            pyautogui.write(line, interval=0.05)
-                            pyautogui.hotkey('shift', 'enter')  # 换行
-                    pyautogui.press('enter')  # 发送
-                else:
-                    # 直接发送短消息
-                    pyautogui.write(message, interval=0.05)
-                    pyautogui.press('enter')
-                
+
                 self.logger.info(f"已发送微信消息到: {group_name}")
                 
                 # 更新最近使用时间
@@ -977,13 +972,13 @@ if __name__ == "__main__":
             "这是一条测试微信消息！"
         )
         
-        # # 安排定时微信消息（120秒后）
-        # send_time = datetime.datetime.now() + datetime.timedelta(seconds=10)
-        # notifier.schedule_wechat_message(
-        #     group_name,
-        #     "这是一条定时微信消息，将在2分钟后发送！",
-        #     send_time
-        # )
+        # 安排定时微信消息（120秒后）
+        send_time = datetime.datetime.now() + datetime.timedelta(seconds=10)
+        notifier.schedule_wechat_message(
+            group_name,
+            "这是一条定时微信消息，将在2分钟后发送！",
+            send_time
+        )
     else:
         logging.warning("微信客户端未运行，跳过微信通知测试")
     
